@@ -1,0 +1,136 @@
+C51 COMPILER V9.60.0.0   WS2812                                                            08/27/2022 15:42:08 PAGE 1   
+
+
+C51 COMPILER V9.60.0.0, COMPILATION OF MODULE WS2812
+OBJECT MODULE PLACED IN .\Objects\WS2812.obj
+COMPILER INVOKED BY: E:\kali\C51\BIN\C51.EXE WS2812.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\WS281
+                    -2.lst) OBJECT(.\Objects\WS2812.obj)
+
+line level    source
+
+   1          /*
+   2            CH552T 主频24M，发送一个灯的数据大概耗时22us
+   3            2021-8-19修改
+   4          */
+   5          #include ".\Public\CH554.H"
+   6          #include ".\Public\Debug.H"
+   7          #include "WS2812.H"
+   8          #include <intrins.h>
+   9          #define SEND1 WS2812_DI = 1;_nop_();_nop_();_nop_();_nop_();_nop_();_nop_();_nop_();_nop_();_nop_();_nop_(
+             -);_nop_();_nop_();_nop_();_nop_();_nop_();_nop_();WS2812_DI = 0;
+  10          #define SEND0 WS2812_DI = 1;_nop_();_nop_();_nop_();_nop_();_nop_();WS2812_DI = 0;_nop_();_nop_();_nop_();
+             -_nop_();_nop_();_nop_();_nop_();_nop_();_nop_();
+  11          sbit WS2812_DI = P3^3;
+  12          /***********WS2812写数据函数***********/
+  13          void WS2812DataTranslator(unsigned char value)
+  14          {
+  15   1              if (value & 0x80)
+  16   1              {
+  17   2                      SEND1;
+  18   2              }
+  19   1              else
+  20   1              {
+  21   2                      SEND0;
+  22   2              }
+  23   1              if (value & 0x40)
+  24   1              {
+  25   2                      SEND1;
+  26   2              }
+  27   1              else
+  28   1              {
+  29   2                      SEND0;
+  30   2              }
+  31   1              if (value & 0x20)
+  32   1              {
+  33   2                      SEND1;
+  34   2              }
+  35   1              else
+  36   1              {
+  37   2                      SEND0;
+  38   2              }
+  39   1              if (value & 0x10)
+  40   1              {
+  41   2                      SEND1;
+  42   2              }
+  43   1              else
+  44   1              {
+  45   2                      SEND0;
+  46   2              }
+  47   1              if (value & 0x08)
+  48   1              {
+  49   2                      SEND1;
+  50   2              }
+  51   1              else
+  52   1              {
+C51 COMPILER V9.60.0.0   WS2812                                                            08/27/2022 15:42:08 PAGE 2   
+
+  53   2                      SEND0;
+  54   2              }
+  55   1              if (value & 0x04)
+  56   1              {
+  57   2                      SEND1;
+  58   2              }
+  59   1              else
+  60   1              {
+  61   2                      SEND0;
+  62   2              }
+  63   1              if (value & 0x02)
+  64   1              {
+  65   2                      SEND1;
+  66   2              }
+  67   1              else
+  68   1              {
+  69   2                      SEND0;
+  70   2              }
+  71   1              if (value & 0x01)
+  72   1              {
+  73   2                      SEND1;
+  74   2              }
+  75   1              else
+  76   1              {
+  77   2                      SEND0;
+  78   2              }
+  79   1      }
+  80          /***********WS2812写RGB值函数***********/
+  81          void WS2812RGBvalue(unsigned char Rvalue, unsigned char Gvalue, unsigned char Bvalue, unsigned char ledQua
+             -ntity)
+  82          {
+  83   1              while (ledQuantity--)
+  84   1              {
+  85   2                      WS2812DataTranslator(Gvalue);
+  86   2                      WS2812DataTranslator(Rvalue);
+  87   2                      WS2812DataTranslator(Bvalue);
+  88   2              }
+  89   1              WS2812_DI = 0;
+  90   1              //mDelayuS(300);
+  91   1      }
+  92          /***********WS2812初始化函数***********/
+  93          void WS2812Initialize(unsigned char ledQuantityum)
+  94          {
+  95   1              while (ledQuantityum--)
+  96   1              {
+  97   2                      WS2812DataTranslator(0);
+  98   2                      WS2812DataTranslator(0);
+  99   2                      WS2812DataTranslator(0);
+ 100   2              }
+ 101   1              WS2812_DI = 0;
+ 102   1              mDelayuS(300);
+ 103   1      }
+ 104          
+ 105          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    413    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       4
+C51 COMPILER V9.60.0.0   WS2812                                                            08/27/2022 15:42:08 PAGE 3   
+
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

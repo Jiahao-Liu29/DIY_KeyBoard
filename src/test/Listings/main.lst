@@ -1,0 +1,438 @@
+C51 COMPILER V9.60.0.0   MAIN                                                              08/28/2022 12:28:54 PAGE 1   
+
+
+C51 COMPILER V9.60.0.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: E:\kali\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\main.ls
+                    -t) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          #include <ch552.h>
+   2          #include "uart1.h"
+   3          #include ".\Public\debug.h"
+   4          #include "stdio.h"
+   5          #include <string.h>
+   6          #include <intrins.h>
+   7          #include "stdlib.h"
+   8          
+   9          #define uchar unsigned char
+  10          #define uint unsigned int
+  11          
+  12          UINT8 T0RH = 0; //T0高8位重载值
+  13          UINT8 T0RL = 0; //T0低8位重载值
+  14          sbit P14 = P3^0;
+  15          sbit Key = P1^5;
+  16          int count = 0;
+  17          uint SEED = 0;
+  18          uint num_count;
+  19          code uchar HUXICODE[][3] = {{32,11,227}, {29,10,201},{23,7,165}, {21,7,143}, {17,5,122},{15,5,101},{12,4,8
+             -1}, {6,2,43}, {3,1,18}, {0,0,0},
+  20                                                          {31,219,4}, {27,188,3},{23,167,3}, {21,146,3}, {18,125,2},{15,104,2},{12,84,1}, {7,52,1}, {5,33,1}, 
+             -{0,0,0},
+  21                                                          {218,100,3}, {188,86,3},{167,77,3}, {149,68,2}, {125,57,2},{104,48,2},{84,38,1}, {63,29,1}, {26,12,0
+             -}, {0,0,0}};
+  22          //uchar send_buf1[17] = {32, 29, 23, 50, 20, 70, 110, 150, 160, 30, 88, 215, 255, 183, 167, 19, 231};
+  23          //uchar send_buf2[17] = {11, 10, 7, 75, 81, 255, 164, 137, 35, 98, 64, 25, 167, 178, 123, 45, 81};
+  24          //uchar send_buf3[17] = {227, 201, 165, 20, 164, 45, 198, 126, 210, 39, 172, 189, 67, 83, 23, 156, 31};
+  25          
+  26          #define DAT1    P14=1;_nop_();_nop_();_nop_();_nop_();_nop_();_nop_();_nop_();_nop_();_nop_();_nop_();_nop_()
+             -;_nop_();_nop_();_nop_();_nop_();_nop_();_nop_();P14=0;
+  27          #define DAT0    P14=1;_nop_();_nop_();_nop_();_nop_();_nop_();P14=0;_nop_();_nop_();_nop_();_nop_();_nop_();_
+             -nop_();_nop_();_nop_();_nop_();_nop_();_nop_();_nop_();_nop_();
+  28          
+  29          // 解析一个 8bit 数据 0 或 1
+  30          void Anlx_bit(uchar* dat)
+  31          {
+  32   1              uint i;
+  33   1              for(i = 0; i < 8; i++)
+  34   1              {
+  35   2                      if((*dat >> (7-i)) & 0x01)      // 为 1
+  36   2                      {
+  37   3                              DAT1;
+  38   3                      }
+  39   2                      else    
+  40   2                              DAT0;
+  41   2              }
+  42   1      }
+  43          
+  44          void WS2812Data(unsigned char value)
+  45          {
+  46   1              if (value & 0x80)
+  47   1              {
+  48   2                      DAT1;
+  49   2              }
+C51 COMPILER V9.60.0.0   MAIN                                                              08/28/2022 12:28:54 PAGE 2   
+
+  50   1              else
+  51   1              {
+  52   2                      DAT0;
+  53   2              }
+  54   1              if (value & 0x40)
+  55   1              {
+  56   2                      DAT1;
+  57   2              }
+  58   1              else
+  59   1              {
+  60   2                      DAT0;
+  61   2              }
+  62   1              if (value & 0x20)
+  63   1              {
+  64   2                      DAT1;
+  65   2              }
+  66   1              else
+  67   1              {
+  68   2                      DAT0;
+  69   2              }
+  70   1              if (value & 0x10)
+  71   1              {
+  72   2                      DAT1;
+  73   2              }
+  74   1              else
+  75   1              {
+  76   2                      DAT0;
+  77   2              }
+  78   1              if (value & 0x08)
+  79   1              {
+  80   2                      DAT1;
+  81   2              }
+  82   1              else
+  83   1              {
+  84   2                      DAT0;
+  85   2              }
+  86   1              if (value & 0x04)
+  87   1              {
+  88   2                      DAT1;
+  89   2              }
+  90   1              else
+  91   1              {
+  92   2                      DAT0;
+  93   2              }
+  94   1              if (value & 0x02)
+  95   1              {
+  96   2                      DAT1;
+  97   2              }
+  98   1              else
+  99   1              {
+ 100   2                      DAT0;
+ 101   2              }
+ 102   1              if (value & 0x01)
+ 103   1              {
+ 104   2                      DAT1;
+ 105   2              }
+ 106   1              else
+ 107   1              {
+ 108   2                      DAT0;
+ 109   2              }
+ 110   1      }
+ 111          
+C51 COMPILER V9.60.0.0   MAIN                                                              08/28/2022 12:28:54 PAGE 3   
+
+ 112          void display_rgb(uchar r, uchar g, uchar b) 
+ 113          {
+ 114   1              WS2812Data(g);
+ 115   1              WS2812Data(r);
+ 116   1              WS2812Data(b);
+ 117   1      }
+ 118          
+ 119          // 随机颜色
+ 120          void display_suiji(uchar num)
+ 121          {
+ 122   1              uint i = 0;
+ 123   1              for(i = 0; i< num+1; i++)
+ 124   1              {
+ 125   2              //随机颜色
+ 126   2                      uint green = SEED>>8;
+ 127   2                      uint red = SEED;
+ 128   2                      uint blue = ~SEED;
+ 129   2                      SEED = SEED + 100;
+ 130   2                      WS2812Data(green);
+ 131   2                      WS2812Data(red);
+ 132   2                      WS2812Data(blue);
+ 133   2              }
+ 134   1      }
+ 135          
+ 136          // 呼吸灯
+ 137          void display_char(uint num)
+ 138          {
+ 139   1              WS2812Data(HUXICODE[num][1]);
+ 140   1              WS2812Data(HUXICODE[num][0]);
+ 141   1              WS2812Data(HUXICODE[num][2]);
+ 142   1      }
+ 143          
+ 144          /**T0配置函数**/
+ 145          void ConfigT0(UINT8 ms)
+ 146          {
+ 147   1          unsigned long tmp = 0;
+ 148   1      
+ 149   1              tmp = 24000000/12;
+ 150   1              tmp = (tmp * ms)/1000;
+ 151   1              tmp = 65536 - tmp;
+ 152   1              tmp = tmp + 1;
+ 153   1          T0RH = (UINT8)(tmp >> 8);
+ 154   1              T0RL = (UINT8)tmp;
+ 155   1      
+ 156   1              TMOD = ( TMOD & ~( bT0_GATE | bT0_CT | bT0_M1 ) ) | bT0_M0;//* 模式1，16 位定时/计数器
+ 157   1              TH0 = T0RH;
+ 158   1              TL0 = T0RL;
+ 159   1              TF0 = 0;
+ 160   1              ET0 = 1;
+ 161   1      }
+ 162          
+ 163          UINT8 T2RH = 0; //T0高8位重载值
+ 164          UINT8 T2RL = 0; //T0低8位重载值
+ 165          
+ 166          /**T2配置函数**/
+ 167          void ConfigT2(UINT8 ms)
+ 168          {
+ 169   1          unsigned long tmp = 0;
+ 170   1      
+ 171   1              tmp = 24000000/12;
+ 172   1              tmp = (tmp * ms)/1000;
+ 173   1              tmp = 65536 - tmp;
+C51 COMPILER V9.60.0.0   MAIN                                                              08/28/2022 12:28:54 PAGE 4   
+
+ 174   1              tmp = tmp + 1;
+ 175   1          T2RH = (UINT8)(tmp >> 8);
+ 176   1              T2RL = (UINT8)tmp;
+ 177   1      
+ 178   1      //      T2MOD = ( T2MOD & ~( bT1_GATE | bT1_CT | bT1_M1 ) ) | bT1_M0;//* 模式1，16 位定时/计数器
+ 179   1              T2MOD |= (bTMR_CLK | bT2_CLK);
+ 180   1              C_T2=0;
+ 181   1              RCLK = 0;
+ 182   1              TCLK = 0;
+ 183   1              CP_RL2 = 0;
+ 184   1              TH2 = T2RH;
+ 185   1              TL2 = T2RL;
+ 186   1              ET2 = 1;
+ 187   1      //      TR1 = 1;
+ 188   1      }
+ 189          
+ 190          pdata UINT8 First_Flag = 1;
+ 191          pdata UINT8 Second_Flag = 0;
+ 192          pdata UINT8 Time_Flag = 0;
+ 193          pdata UINT8 End_Flag = 0;
+ 194          UINT8 LED_AttitudeFlag = 0;
+ 195          unsigned long pdata Double_TimeThr = 0;
+ 196          
+ 197          pdata UINT8 Key_Flag = 0;
+ 198          pdata UINT8 Key_DoubleFlag = 0;
+ 199          
+ 200          /*十进制转BCD*/
+ 201          UINT8 DEC_BCD(UINT8 DEC)
+ 202          {
+ 203   1              UINT8 BCD;
+ 204   1              BCD = DEC / 10;
+ 205   1              DEC %= 10;
+ 206   1              DEC += BCD * 16;
+ 207   1      
+ 208   1              return DEC;
+ 209   1      }
+ 210          
+ 211          void Key_Driver()
+ 212          {
+ 213   1              if(!Key)
+ 214   1              {
+ 215   2                      mDelaymS(8);
+ 216   2                      if(!Key)
+ 217   2                      {
+ 218   3      //                      if(First_Flag)
+ 219   3      //                      {
+ 220   3      //                              Time_Flag = 1;
+ 221   3      //                              mTimer2RunCTL(1);
+ 222   3      ////                                    Double_TimeThr += 25;
+ 223   3      //                              First_Flag = 0;
+ 224   3      //                      }
+ 225   3      //                      else if(Second_Flag)
+ 226   3      //                      {
+ 227   3      //                              End_Flag = 1;
+ 228   3      //                      }
+ 229   3                              if(Key_Flag == 0)
+ 230   3                              {
+ 231   4                                      Key_Flag = 1;
+ 232   4                                      Time_Flag = 1;
+ 233   4                                      mTimer2RunCTL(1);
+ 234   4                              }
+ 235   3                      }
+C51 COMPILER V9.60.0.0   MAIN                                                              08/28/2022 12:28:54 PAGE 5   
+
+ 236   2              }
+ 237   1              else    // 按键松开
+ 238   1              {
+ 239   2                      if(Key_Flag == 1)
+ 240   2                      {
+ 241   3                              Key_Flag = 0;
+ 242   3                              if(Key_DoubleFlag == 0)
+ 243   3                              {
+ 244   4                                      Key_DoubleFlag = 1;
+ 245   4                                      Double_TimeThr = 0;
+ 246   4                              }
+ 247   3                              else if(Key_DoubleFlag == 1)
+ 248   3                              {
+ 249   4                                      if(Double_TimeThr < 500)
+ 250   4                                      {
+ 251   5                                              Key_DoubleFlag = 0;
+ 252   5                                              CH554UART1SendByte(0x00);
+ 253   5      //                                      return 1;
+ 254   5                                      }
+ 255   4                              }
+ 256   3                      }
+ 257   2                      else if(Key_DoubleFlag == 1)
+ 258   2                      {
+ 259   3                              if(Double_TimeThr >= 500)
+ 260   3                              {
+ 261   4                                      Key_DoubleFlag = 0;
+ 262   4                                      CH554UART1SendByte(0x01);
+ 263   4                                      Time_Flag = 0;
+ 264   4                                      Double_TimeThr = 0;
+ 265   4                                      mTimer2RunCTL(0);
+ 266   4      //                              return 2;
+ 267   4                              }
+ 268   3                      }
+ 269   2                      
+ 270   2                      /*
+ 271   2                      if(End_Flag)
+ 272   2                      {
+ 273   2                              if(Double_TimeThr < 500)        // 1 秒内按下
+ 274   2                              {
+ 275   2              //                                              mTimer1RunCTL(1);
+ 276   2                                      switch(LED_AttitudeFlag)
+ 277   2                                      {
+ 278   2                                              case 0 : LED_AttitudeFlag++;mTimer2RunCTL(0); break;
+ 279   2                                              case 1 : LED_AttitudeFlag++;mTimer2RunCTL(0); break;
+ 280   2                                              default: break;
+ 281   2                                      }
+ 282   2                                      CH554UART1SendByte(DEC_BCD(LED_AttitudeFlag));
+ 283   2                                      if(LED_AttitudeFlag >= 2)
+ 284   2                                              LED_AttitudeFlag = 0;
+ 285   2                              }
+ 286   2              }
+ 287   2                      */
+ 288   2              }
+ 289   1      //      return 0;
+ 290   1      }
+ 291          
+ 292          
+ 293          
+ 294          
+ 295          //timer2中断服务程序
+ 296          void    mTimer2Interrupt( void ) interrupt INT_NO_TMR2 using 3
+ 297          {
+C51 COMPILER V9.60.0.0   MAIN                                                              08/28/2022 12:28:54 PAGE 6   
+
+ 298   1              mTimer2RunCTL(0);
+ 299   1              if(TF2)
+ 300   1          {
+ 301   2              TF2 = 0;                                                             //清空定时器2溢出中断        
+ 302   2              if(Time_Flag)
+ 303   2                      {
+ 304   3                              Double_TimeThr++;
+ 305   3                      }
+ 306   2                      else
+ 307   2                      {
+ 308   3                              Double_TimeThr = 0;
+ 309   3                      }
+ 310   2                      
+ 311   2                      
+ 312   2          }
+ 313   1              mTimer2RunCTL(1);
+ 314   1      }
+ 315          
+ 316          
+ 317          void main()
+ 318          {
+ 319   1      //      WS2812Initialize(4);
+ 320   1      //      int i = 0;
+ 321   1      //      int j = 0;
+ 322   1              CfgFsys();
+ 323   1              mDelaymS(8);
+ 324   1              ConfigT2(1);
+ 325   1              mTimer2RunCTL(0);
+ 326   1      //      ConfigT0(10); // 10ms
+ 327   1              UART1Init( ); 
+ 328   1              EA = 1; //允许单片机中断        
+ 329   1              
+ 330   1              while(1)
+ 331   1              {
+ 332   2      //              CH554UART1SendByte(0x00);
+ 333   2                      Key_Driver();
+ 334   2      //              WS2812RGBvalue(0, 255, 0, 1);
+ 335   2      //              P14 = 1;_nop_();_nop_();_nop_();_nop_();_nop_();_nop_();_nop_();_nop_();_nop_();_nop_();_nop_();_nop_(
+             -);_nop_();_nop_();_nop_();_nop_();_nop_();P14 = 0;_nop_();_nop_();_nop_();_nop_();_nop_();_nop_();_nop_();_nop_();_nop_(
+             -);                
+ 336   2      //              
+ 337   2      //              P14 = 1;_nop_();_nop_();_nop_();_nop_();_nop_();P14 = 0;_nop_();_nop_();_nop_();_nop_();_nop_();_nop_(
+             -);_nop_();_nop_();_nop_();
+ 338   2      //              display_rgb(255, 0, 0);
+ 339   2      //              mDelaymS(1000);
+ 340   2      //              display_rgb(0, 255, 0);
+ 341   2      //              mDelaymS(1000);
+ 342   2      //              for(j = 0; j < 16;j++)
+ 343   2      //              {
+ 344   2      //                      for(i = j; i < 30; i++)
+ 345   2      //                      {
+ 346   2      ////                            display_rgb(send_buf1[i], send_buf2[i], send_buf3[i]);
+ 347   2      //                              display_char(i);
+ 348   2      ////                            display_suiji(i);
+ 349   2      //                      }
+ 350   2      //                      mDelaymS(100);
+ 351   2      //              }
+ 352   2                      
+ 353   2                      
+ 354   2                      
+ 355   2      //              display_rgb(255, 0, 0);
+ 356   2      //              if(Key == 0)
+C51 COMPILER V9.60.0.0   MAIN                                                              08/28/2022 12:28:54 PAGE 7   
+
+ 357   2      //              {
+ 358   2      //                      mDelaymS(10);
+ 359   2      //                      if(Key == 0)
+ 360   2      //                      {
+ 361   2      //                              mTimer0RunCTL(1);
+ 362   2      //                              send_buf[2] = 10;
+ 363   2                                      
+ 364   2      //                      }       
+ 365   2      //              }
+ 366   2              }
+ 367   1      }
+ 368          
+ 369          
+ 370          ///**T0中断函数**/
+ 371          //void InterruptTimer0() interrupt INT_NO_TMR0 using 1
+ 372          //{
+ 373          //      uint i;
+ 374          //      TH0 = T0RH;
+ 375          //      TL0 = T0RL;
+ 376          //      
+ 377          //      count++;
+ 378          //      
+ 379          //      if(count >= 100)
+ 380          //      {
+ 381          //              num_count++;
+ 382          //              if(num_count == 30)
+ 383          //                      num_count = 0;
+ 384          //              for(i = num_count; i < 30; i++)
+ 385          //              {
+ 386          //                      display_char(i);
+ 387          //              }       
+ 388          //              
+ 389          //              mTimer0RunCTL(0);
+ 390          //              count = 0;
+ 391          //      }
+ 392          //}
+ 393          
+ 394          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1171    ----
+   CONSTANT SIZE    =     90    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =     10    ----
+   DATA SIZE        =     11      14
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
